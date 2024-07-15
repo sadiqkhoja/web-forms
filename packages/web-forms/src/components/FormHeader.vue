@@ -42,6 +42,7 @@ const handleLanguageChange = (event: FormLanguage) => {
 
 <template>
 	<!-- for desktop -->
+	{{ form.validationState.violations.map(v => v.reference) }}
 	<div class="hidden lg:flex justify-content-end flex-wrap gap-3 larger-screens">
 		<PrimeButton class="print-button" severity="secondary" rounded icon="icon-local_printshop" @click="print" />
 		<FormLanguageMenu 
