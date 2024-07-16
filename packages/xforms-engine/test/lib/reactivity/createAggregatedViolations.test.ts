@@ -6,9 +6,11 @@ import {
 	head,
 	html,
 	input,
+	item,
 	label,
 	mainInstance,
 	model,
+	select1,
 	t,
 	title,
 } from '@getodk/common/test/fixtures/xform-dsl/index.ts';
@@ -32,11 +34,13 @@ describe('createAggregatedViolations - reactive aggregated `constraint` and `req
 							t('contactdetails',
 								t('residentialAddress'),
 								t('phone',
-										t('home'))),
+									t('home'))),
+							t('color'),
 							t('meta',
 								t('instanceID')))),
-					bind('/data/contactdetails/residentialAddress').required(),
-					bind('/data/contactdetails/phone/home').required())
+						bind('/data/contactdetails/residentialAddress').required(),
+						bind('/data/contactdetails/phone/home').required(),
+						bind('/data/color').required())
 			),
 			body(
 				group(
@@ -50,7 +54,8 @@ describe('createAggregatedViolations - reactive aggregated `constraint` and `req
 						label('Phone numbers'),
 
 						input('/data/contactdetails/phone/home',
-							label('Home phone no.'))))));
+							label('Home phone no.')))),
+				select1('/data/color', item('red', 'Red'), item('green', 'Green'))));
 	});
 
 	interface SimplifiedViolation {
@@ -130,6 +135,51 @@ describe('createAggregatedViolations - reactive aggregated `constraint` and `req
 						},
 					},
 				],
+			]);
+		});
+
+		it.fails('observes violations of selects - why it is so special??', async () => {
+			const observed = await reactiveTestScope(async ({ effect, mutable }) => {
+				const root = await initializeForm(definition.asXml(), {
+					config: {
+						stateFactory: mutable,
+					},
+				});
+
+				const color = root.currentState.children[1];
+
+				if (color?.nodeType !== 'select' || color.currentState.reference !== '/data/color') {
+					throw new Error('Expected group /data/color');
+				}
+
+				interface observedState {
+					colorValid: boolean;
+					colorInRootValid: boolean;
+				}
+
+				const observedViolations: observedState[] = [];
+
+				effect(() => {
+					observedViolations.push({
+						colorValid: color.validationState.violation?.valid ?? true,
+						colorInRootValid:
+							root.validationState.violations.find((v) => v.reference === '/data/color')?.violation
+								.valid ?? true,
+					});
+				});
+
+				// Satisfy `required` condition
+				color.select(color.currentState.valueOptions[0]!);
+
+				return observedViolations;
+			});
+
+			expect(observed).toEqual([
+				// initially invalid
+				{ colorValid: false, colorInRootValid: false },
+				// Both should be valid
+				{ colorValid: true, colorInRootValid: true },
+				// why effect is executed third time?
 			]);
 		});
 	});
