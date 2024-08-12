@@ -64,7 +64,8 @@
     "vite": "^5.3.3",
     "vite-plugin-css-injected-by-js": "^3.5.1",
     "vitest": "^2.0.2",
-    "vue": "3.3.4"
+    "vue": "3.3.4",
+    "vue-router": "^4.4.3"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
