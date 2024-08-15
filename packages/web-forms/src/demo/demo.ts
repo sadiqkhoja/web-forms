@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { createApp } from 'vue';
+import { createApp, ref } from 'vue';
 
 import { webFormsPlugin } from '../WebFormsPlugin';
 import OdkWebFormDemo from './OdkWebFormDemo.vue';
@@ -18,8 +18,9 @@ const stylesheet = new CSSStyleSheet();
 stylesheet.replaceSync(styles);
 
 document.adoptedStyleSheets.push(stylesheet);
-
+const uploadedFile = ref();
 const app = createApp(OdkWebFormDemo as Component);
 app.use(webFormsPlugin);
 app.use(router);
+app.provide('uploadedFile', uploadedFile);
 app.mount('#app');

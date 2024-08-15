@@ -1,6 +1,9 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { ref, inject } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+
+const router = useRouter()
+const route = useRoute()
 
 const formFixtureGlobImports = import.meta.glob<true, 'raw', string>('../../../ui-solid/fixtures/xforms/**/*.xml', {
 	query: '?raw'
@@ -31,11 +34,40 @@ const toggleCategory = (category:string) => {
 	}
 }
 
+
+/* eslint-disable */
+
+
+let fileHandle = inject('uploadedFile');
+fileHandle.value = null;
+
+const uploadFile = async () => {
+	try {
+		const fileHandles = await window.showOpenFilePicker({
+		types: [
+			{
+				description: "Excel File",
+				accept: {
+					"application/vnd.ms-excel": [".xlsx", ".xls"],
+				},
+			},
+		]});
+
+		fileHandle.value = fileHandles[0];
+
+		router.push('/form');
+	} catch(e){
+		console.log(e);
+	}
+}
+
+/* eslint-enable */
 </script>
 
 <template>
 	<div class="component-root">
 		<h1>Demo Forms</h1>
+
 		<ul class="category-list">
 			<li
 				v-for="(category,categoryName) in categories"
@@ -53,6 +85,13 @@ const toggleCategory = (category:string) => {
 				</ul>
 			</li>
 		</ul>
+
+		<div class="upload-section">
+			Upload your own XLS Form:
+			<button @click="uploadFile()">
+				Browse
+			</button>
+		</div>
 	</div>
 </template>
 
@@ -63,6 +102,9 @@ const toggleCategory = (category:string) => {
 		margin-top: -25px;
 	}
 
+	.upload-section {
+		padding-left: 20px;
+	}
 	h1 {
 		margin-left: 10px;
 		padding-top: 20px;
